@@ -113,6 +113,15 @@
 
 -(void)send_urls
 {
+    NSAlert *alert = [[NSAlert alloc] init];
+
+    if ([urls count] == 0) {
+        [alert setAlertStyle:NSWarningAlertStyle];
+        [alert setMessageText:@"You have to select at least a link with your browser before submitting it to a remote mule!" ];
+        [alert beginSheetModalForWindow:[tableview window] modalDelegate:self didEndSelector:nil contextInfo:nil];
+        return;
+    }
+    
     if (!host || !user || !port || !pwd || !command ||
         [host length] == 0 || [user length] == 0 ||
         [port length] == 0 || [pwd length] == 0 ||
@@ -143,10 +152,10 @@
             NSString *cmd_string = [NSString stringWithFormat:@"%@ \"%@\"", command, url];
             if (!conn.Command([cmd_string UTF8String], result)) {
                 NSLog(@"Error executing <%@>: %s", cmd_string, conn.Error().c_str());
+                ko = true;
             }
             else {
                 NSLog(@"Queuing file %@, cmdline: %@ answer: %s", [d objectForKey:@"filename"], cmd_string, result.c_str());
-                ko = true;
             }
         }
         NSLog(@"Closing connection.");
@@ -156,13 +165,15 @@
         NSLog(@"Unable to connect to %@/%@ error %s", host, port, conn.Error().c_str());
         ko = true;
     }
-    
+
     if (!ko) {
+        [alert setAlertStyle:NSInformationalAlertStyle];
+        [alert setMessageText:[NSString stringWithFormat:@"%lu links submitted correctly to %@", [urls count], host]];
+        [alert beginSheetModalForWindow:[tableview window] modalDelegate:self didEndSelector:nil contextInfo:nil];
         [urls removeAllObjects];
         [tableview reloadData];
     }
     else {
-        NSAlert *alert = [[NSAlert alloc] init];
         [alert setAlertStyle:NSWarningAlertStyle];
         [alert setMessageText:@"Unable to submit your links, check your connection datas"]
         ;
