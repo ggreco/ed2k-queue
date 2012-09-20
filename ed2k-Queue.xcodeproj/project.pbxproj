@@ -7,15 +7,35 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0B4AA27A160A1B180008C3C1 /* include in Resources */ = {isa = PBXBuildFile; fileRef = 0B4AA279160A1B180008C3C1 /* include */; };
+		0B4AA27C160A1B320008C3C1 /* libssh2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0B4AA27B160A1B320008C3C1 /* libssh2.a */; };
+		0B4AA27E160A1B410008C3C1 /* libssl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 0B4AA27D160A1B410008C3C1 /* libssl.dylib */; };
+		0B4AA27F160A1F0B0008C3C1 /* ssh_conn.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0B4AA276160A1AB40008C3C1 /* ssh_conn.cpp */; };
+		0B4AA281160A1FD50008C3C1 /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 0B4AA280160A1FD50008C3C1 /* libcrypto.dylib */; };
+		0B4AA283160A1FE10008C3C1 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 0B4AA282160A1FE10008C3C1 /* libz.dylib */; };
+		0B4AA287160A23170008C3C1 /* PrefsWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B4AA285160A23170008C3C1 /* PrefsWindow.m */; };
+		0B4AA288160A23170008C3C1 /* PrefsWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0B4AA286160A23170008C3C1 /* PrefsWindow.xib */; };
 		0BB229DA1609CFDE00516CCB /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0BB229D91609CFDE00516CCB /* Cocoa.framework */; };
 		0BB229E41609CFDE00516CCB /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0BB229E21609CFDE00516CCB /* InfoPlist.strings */; };
 		0BB229E61609CFDE00516CCB /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 0BB229E51609CFDE00516CCB /* main.m */; };
 		0BB229EA1609CFDE00516CCB /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 0BB229E81609CFDE00516CCB /* Credits.rtf */; };
-		0BB229ED1609CFDE00516CCB /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 0BB229EC1609CFDE00516CCB /* AppDelegate.m */; };
+		0BB229ED1609CFDE00516CCB /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0BB229EC1609CFDE00516CCB /* AppDelegate.mm */; };
 		0BB229F01609CFDF00516CCB /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0BB229EE1609CFDF00516CCB /* MainMenu.xib */; };
+		0BB22A021609FB6100516CCB /* ed2k.png in Resources */ = {isa = PBXBuildFile; fileRef = 0BB22A011609FB6100516CCB /* ed2k.png */; };
+		0BB22A04160A076500516CCB /* ed2k.icns in Resources */ = {isa = PBXBuildFile; fileRef = 0BB22A03160A076500516CCB /* ed2k.icns */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0B4AA276160A1AB40008C3C1 /* ssh_conn.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ssh_conn.cpp; sourceTree = "<group>"; };
+		0B4AA277160A1AB40008C3C1 /* ssh_conn.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ssh_conn.h; sourceTree = "<group>"; };
+		0B4AA279160A1B180008C3C1 /* include */ = {isa = PBXFileReference; lastKnownFileType = folder; path = include; sourceTree = "<group>"; };
+		0B4AA27B160A1B320008C3C1 /* libssh2.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libssh2.a; sourceTree = "<group>"; };
+		0B4AA27D160A1B410008C3C1 /* libssl.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssl.dylib; path = usr/lib/libssl.dylib; sourceTree = SDKROOT; };
+		0B4AA280160A1FD50008C3C1 /* libcrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.dylib; path = usr/lib/libcrypto.dylib; sourceTree = SDKROOT; };
+		0B4AA282160A1FE10008C3C1 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
+		0B4AA284160A23170008C3C1 /* PrefsWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PrefsWindow.h; sourceTree = "<group>"; };
+		0B4AA285160A23170008C3C1 /* PrefsWindow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PrefsWindow.m; sourceTree = "<group>"; };
+		0B4AA286160A23170008C3C1 /* PrefsWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PrefsWindow.xib; sourceTree = "<group>"; };
 		0BB229D51609CFDE00516CCB /* ed2k-Queue.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ed2k-Queue.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0BB229D91609CFDE00516CCB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		0BB229DC1609CFDE00516CCB /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -27,8 +47,10 @@
 		0BB229E71609CFDE00516CCB /* ed2k-Queue-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ed2k-Queue-Prefix.pch"; sourceTree = "<group>"; };
 		0BB229E91609CFDE00516CCB /* en */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = en; path = en.lproj/Credits.rtf; sourceTree = "<group>"; };
 		0BB229EB1609CFDE00516CCB /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
-		0BB229EC1609CFDE00516CCB /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		0BB229EC1609CFDE00516CCB /* AppDelegate.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AppDelegate.mm; sourceTree = "<group>"; };
 		0BB229EF1609CFDF00516CCB /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		0BB22A011609FB6100516CCB /* ed2k.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = ed2k.png; path = ../ed2k.png; sourceTree = "<group>"; };
+		0BB22A03160A076500516CCB /* ed2k.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = ed2k.icns; path = ../ed2k.icns; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -36,6 +58,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0B4AA27C160A1B320008C3C1 /* libssh2.a in Frameworks */,
+				0B4AA27E160A1B410008C3C1 /* libssl.dylib in Frameworks */,
+				0B4AA281160A1FD50008C3C1 /* libcrypto.dylib in Frameworks */,
+				0B4AA283160A1FE10008C3C1 /* libz.dylib in Frameworks */,
 				0BB229DA1609CFDE00516CCB /* Cocoa.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -63,6 +89,10 @@
 		0BB229D81609CFDE00516CCB /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				0B4AA27B160A1B320008C3C1 /* libssh2.a */,
+				0B4AA27D160A1B410008C3C1 /* libssl.dylib */,
+				0B4AA280160A1FD50008C3C1 /* libcrypto.dylib */,
+				0B4AA282160A1FE10008C3C1 /* libz.dylib */,
 				0BB229D91609CFDE00516CCB /* Cocoa.framework */,
 				0BB229DB1609CFDE00516CCB /* Other Frameworks */,
 			);
@@ -82,10 +112,17 @@
 		0BB229DF1609CFDE00516CCB /* ed2k-Queue */ = {
 			isa = PBXGroup;
 			children = (
+				0BB22A05160A079600516CCB /* images */,
+				0B4AA279160A1B180008C3C1 /* include */,
+				0B4AA276160A1AB40008C3C1 /* ssh_conn.cpp */,
+				0B4AA277160A1AB40008C3C1 /* ssh_conn.h */,
 				0BB229EB1609CFDE00516CCB /* AppDelegate.h */,
-				0BB229EC1609CFDE00516CCB /* AppDelegate.m */,
+				0BB229EC1609CFDE00516CCB /* AppDelegate.mm */,
 				0BB229EE1609CFDF00516CCB /* MainMenu.xib */,
 				0BB229E01609CFDE00516CCB /* Supporting Files */,
+				0B4AA284160A23170008C3C1 /* PrefsWindow.h */,
+				0B4AA285160A23170008C3C1 /* PrefsWindow.m */,
+				0B4AA286160A23170008C3C1 /* PrefsWindow.xib */,
 			);
 			path = "ed2k-Queue";
 			sourceTree = "<group>";
@@ -100,6 +137,15 @@
 				0BB229E81609CFDE00516CCB /* Credits.rtf */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		0BB22A05160A079600516CCB /* images */ = {
+			isa = PBXGroup;
+			children = (
+				0BB22A03160A076500516CCB /* ed2k.icns */,
+				0BB22A011609FB6100516CCB /* ed2k.png */,
+			);
+			name = images;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -156,6 +202,10 @@
 				0BB229E41609CFDE00516CCB /* InfoPlist.strings in Resources */,
 				0BB229EA1609CFDE00516CCB /* Credits.rtf in Resources */,
 				0BB229F01609CFDF00516CCB /* MainMenu.xib in Resources */,
+				0BB22A021609FB6100516CCB /* ed2k.png in Resources */,
+				0BB22A04160A076500516CCB /* ed2k.icns in Resources */,
+				0B4AA27A160A1B180008C3C1 /* include in Resources */,
+				0B4AA288160A23170008C3C1 /* PrefsWindow.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -166,8 +216,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0B4AA27F160A1F0B0008C3C1 /* ssh_conn.cpp in Sources */,
 				0BB229E61609CFDE00516CCB /* main.m in Sources */,
-				0BB229ED1609CFDE00516CCB /* AppDelegate.m in Sources */,
+				0BB229ED1609CFDE00516CCB /* AppDelegate.mm in Sources */,
+				0B4AA287160A23170008C3C1 /* PrefsWindow.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -260,7 +312,12 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "ed2k-Queue/ed2k-Queue-Prefix.pch";
+				HEADER_SEARCH_PATHS = "${SRCROOT}/include";
 				INFOPLIST_FILE = "ed2k-Queue/ed2k-Queue-Info.plist";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)\"",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -272,7 +329,12 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "ed2k-Queue/ed2k-Queue-Prefix.pch";
+				HEADER_SEARCH_PATHS = "${SRCROOT}/include";
 				INFOPLIST_FILE = "ed2k-Queue/ed2k-Queue-Info.plist";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)\"",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -297,6 +359,7 @@
 				0BB229F51609CFDF00516CCB /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

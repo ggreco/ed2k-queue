@@ -1,0 +1,216 @@
+//
+//  AppDelegate.m
+//  ed2k-Queue
+//
+//  Created by gabry on 9/19/12.
+//  Copyright (c) 2012 Gabriele Greco. All rights reserved.
+//
+
+#import "AppDelegate.h"
+#import "ssh_conn.h"
+#import "PrefsWindow.h"
+
+@implementation AppDelegate
+
+@synthesize urls, tableview, host, port, command, user, pwd;
+
+- (void)applicationDidFinishLaunching:(NSNotification *)aNotification
+{    
+    // handler registrazion
+    NSAppleEventManager *appleEventManager = [NSAppleEventManager sharedAppleEventManager];
+    [appleEventManager setEventHandler:self andSelector:@selector(handleURLEvent:withReplyEvent:) forEventClass:kInternetEventClass andEventID:kAEGetURL];
+    
+    prefsWin = nil;
+    
+    // carico configurazione e db
+    [self load_cfg];
+    [self load_db];
+    
+    [tableview reloadData];
+}
+
+-(void)load_cfg
+{
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    
+    NSString *file = @"~/Library/Application Support/ed2kQueue/config";
+    file = [file stringByExpandingTildeInPath];
+    if ([fileManager fileExistsAtPath:file] == YES) {
+        NSDictionary *dict = [NSDictionary dictionaryWithContentsOfFile:file];
+        host = [dict objectForKey:@"host"];
+        port = [dict objectForKey:@"port"];
+        command = [dict objectForKey:@"command"];
+        user = [dict objectForKey:@"user"];
+        pwd = [dict objectForKey:@"pwd"];
+    }
+    else {
+        host = nil;
+        port = nil;
+        user = nil;
+        command = nil;
+        pwd = nil;
+    }
+}
+- (void)load_db
+{
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+
+    NSString *file = @"~/Library/Application Support/ed2kQueue/db";
+    file = [file stringByExpandingTildeInPath];
+    if ([fileManager fileExistsAtPath:file] == YES) {
+        urls = [NSMutableArray arrayWithContentsOfFile:file];
+    }
+    else
+        urls = [[NSMutableArray alloc] init];
+}
+
+
+
+- (void)handleURLEvent:(NSAppleEventDescriptor*)event withReplyEvent:(NSAppleEventDescriptor*)replyEvent
+{
+    NSString* url = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
+    NSLog(@"URL: %@", url);
+    NSArray *purl = [[url stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] componentsSeparatedByString:@"|"];
+    
+    if ([[purl objectAtIndex:1] isEqualToString:@"file"]) {
+        NSString *filename = [purl objectAtIndex:2];
+        for (NSDictionary *d in urls) {
+            if ([filename isEqualToString:[d objectForKey:@"filename"]]) {
+                NSLog(@"Ignoring already present entry %@", filename);
+                return;
+            }
+        }
+        NSLog(@"Adding item %@", filename);
+        NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
+                              filename, @"filename",
+                              [purl objectAtIndex:3], @"size",
+                              url, @"url",
+                              nil
+                              ];
+        [urls addObject:dict];
+        [tableview reloadData];
+    }
+    else
+        NSLog(@"Ignored unsupported ed2k URL type %@", [purl objectAtIndex:1]);
+}
+
+-(void)open_prefs
+{
+    NSLog(@"Opening prefs window");
+    if (prefsWin == nil)
+        prefsWin = [[PrefsWindow alloc] initWithWindowNibName:@"PrefsWindow"];
+    
+    NSWindow *w = [prefsWin window];
+    [NSApp runModalForWindow:w];
+    
+    //NSLog(@"Modal dialog ended");
+    [NSApp endSheet: w];
+    [w orderOut:self.tableview.window];
+    
+    // bisogna ricaricare da disco le variabili
+    [self load_cfg];
+}
+
+-(void)send_urls
+{
+    if (!host || !user || !port || !pwd || !command ||
+        [host length] == 0 || [user length] == 0 ||
+        [port length] == 0 || [pwd length] == 0 ||
+        [command length] == 0) {
+        [self open_prefs];
+        [self load_cfg];
+        
+        if (!host || !user || !port || !pwd || !command ||
+            [host length] == 0 || [user length] == 0 ||
+            [port length] == 0 || [pwd length] == 0 ||
+            [command length] == 0)
+            return;
+    }
+    
+    NSLog(@"Submit %lu urls with host %@ and port %@", [urls count], host, port);
+    
+    SSHConn conn([host UTF8String], [port intValue]);
+    
+    conn.UserAuth([user UTF8String], [pwd UTF8String]);
+
+    bool ko = false;
+    
+    if(conn.Connect()) {
+        std::string result;
+        NSLog(@"Connection with %@ established", host);
+        for (NSDictionary *d in urls) {
+            NSString *url = [d objectForKey:@"url"];
+            NSString *cmd_string = [NSString stringWithFormat:@"%@ \"%@\"", command, url];
+            if (!conn.Command([cmd_string UTF8String], result)) {
+                NSLog(@"Error executing <%@>: %s", cmd_string, conn.Error().c_str());
+            }
+            else {
+                NSLog(@"Queuing file %@, cmdline: %@ answer: %s", [d objectForKey:@"filename"], cmd_string, result.c_str());
+                ko = true;
+            }
+        }
+        NSLog(@"Closing connection.");
+        conn.Disconnect();
+    }
+    else {
+        NSLog(@"Unable to connect to %@/%@ error %s", host, port, conn.Error().c_str());
+        ko = true;
+    }
+    
+    if (!ko) {
+        [urls removeAllObjects];
+        [tableview reloadData];
+    }
+    else {
+        NSAlert *alert = [[NSAlert alloc] init];
+        [alert setAlertStyle:NSWarningAlertStyle];
+        [alert setMessageText:@"Unable to submit your links, check your connection datas"]
+        ;
+        [alert beginSheetModalForWindow:[tableview window] modalDelegate:self didEndSelector:nil contextInfo:nil];
+    }
+}
+
+-(void)applicationWillTerminate:(NSNotification *)notification
+{
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    
+    NSString *folder = @"~/Library/Application Support/ed2kQueue";
+    folder = [folder stringByExpandingTildeInPath];
+    if ([fileManager fileExistsAtPath:folder] == NO) {
+        [fileManager createDirectoryAtPath:folder withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+    NSLog(@"Quitting app, writing %lu records to db", [urls count]);
+    [urls writeToFile:[folder stringByAppendingString:@"/db"] atomically:NO];
+    NSDictionary *config = [NSDictionary dictionaryWithObjectsAndKeys:
+                            host,@"host",
+                            port,@"port",
+                            command,@"command",
+                            user,@"user",
+                            pwd,@"pwd",
+                            nil];
+    [config writeToFile:[folder stringByAppendingString:@"/config"] atomically:NO];
+}
+
+- (IBAction)submit_action:(id)sender {
+    if ([[sender identifier] isEqualToString:@"submit"]) {
+        [self send_urls];
+    }
+    else
+        [self open_prefs];
+}
+
+-(NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
+{
+    return [self.urls count];
+}
+
+- (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
+{
+    NSDictionary *dict = [self.urls objectAtIndex:row];
+    
+    if ([[tableColumn identifier] isEqualToString:@"size"])
+        return [dict objectForKey:@"size"];
+    else
+        return [dict objectForKey:@"filename"];
+}
+@end

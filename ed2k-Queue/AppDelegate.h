@@ -8,8 +8,15 @@
 
 #import <Cocoa/Cocoa.h>
 
-@interface AppDelegate : NSObject <NSApplicationDelegate>
+@class PrefsWindow;
 
-@property (assign) IBOutlet NSWindow *window;
+@interface AppDelegate : NSObject <NSApplicationDelegate, NSTableViewDataSource> {
+    PrefsWindow *prefsWin;
+}
+
+@property (unsafe_unretained) IBOutlet NSTableView *tableview;
+@property (strong) NSString *host, *user, *pwd, *command, *port;
+@property (strong) NSMutableArray *urls;
+- (IBAction)submit_action:(id)sender;
 
 @end
