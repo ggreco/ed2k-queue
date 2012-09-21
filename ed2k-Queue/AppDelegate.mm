@@ -94,6 +94,11 @@
         NSLog(@"Ignored unsupported ed2k URL type %@", [purl objectAtIndex:1]);
 }
 
+-(void)cut
+{
+    NSLog(@"Cut clicked");
+}
+
 -(void)open_prefs
 {
     NSLog(@"Opening prefs window");
@@ -181,7 +186,7 @@
     }
 }
 
--(void)applicationWillTerminate:(NSNotification *)notification
+-(void)save_all
 {
     NSFileManager *fileManager = [NSFileManager defaultManager];
     
@@ -200,6 +205,16 @@
                             pwd,@"pwd",
                             nil];
     [config writeToFile:[folder stringByAppendingString:@"/config"] atomically:NO];
+}
+
+-(void)applicationWillResignActive:(NSNotification *)notification
+{
+    [self save_all];
+}
+
+-(void)applicationWillTerminate:(NSNotification *)notification
+{
+    [self save_all];
 }
 
 - (IBAction)submit_action:(id)sender {
@@ -223,5 +238,40 @@
         return [dict objectForKey:@"size"];
     else
         return [dict objectForKey:@"filename"];
+}
+
+-(void)copy:(id)sender {
+    NSPasteboard *pb = [NSPasteboard generalPasteboard];
+    NSIndexSet *rows = [tableview selectedRowIndexes];
+    [pb clearContents];
+    NSMutableArray *contents = [[NSMutableArray alloc] init];
+    
+    [rows enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL *stop) {
+        NSDictionary *d = [urls objectAtIndex:idx];
+        [contents addObject:[d objectForKey:@"url"]];
+    }];
+    [pb writeObjects:contents];
+}
+
+-(void)cut:(id)sender {
+    NSPasteboard *pb = [NSPasteboard generalPasteboard];
+    NSIndexSet *rows = [tableview selectedRowIndexes];
+    [pb clearContents];
+    NSMutableArray *contents = [[NSMutableArray alloc] init];
+    
+    [rows enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL *stop) {
+        NSDictionary *d = [urls objectAtIndex:idx];
+        [contents addObject:[d objectForKey:@"url"]];
+    }];
+    [urls removeObjectsAtIndexes:rows];
+    [tableview reloadData];
+    [pb writeObjects:contents];
+}
+
+-(void)delete:(id)sender {
+    NSIndexSet *rows = [tableview selectedRowIndexes];
+
+    [urls removeObjectsAtIndexes:rows];
+    [tableview reloadData];
 }
 @end
