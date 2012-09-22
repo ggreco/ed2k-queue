@@ -218,7 +218,11 @@
 }
 
 - (IBAction)submit_action:(id)sender {
-    if ([[sender identifier] isEqualToString:@"submit"]) {
+    NSLog(@"Received action from: %@", sender);
+    
+    if (([sender respondsToSelector:@selector(identifier)] && [[sender identifier] isEqualToString:@"submit"]) ||
+        ([sender respondsToSelector:@selector(itemIdentifier)] && [[sender itemIdentifier] isEqualToString:@"submit"]))
+    {
         [self send_urls];
     }
     else
