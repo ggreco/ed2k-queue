@@ -65,14 +65,12 @@
 }
 
 
-
-- (void)handleURLEvent:(NSAppleEventDescriptor*)event withReplyEvent:(NSAppleEventDescriptor*)replyEvent
+-(void)add_url:(NSString*)url
 {
-    NSString* url = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
-    NSLog(@"URL: %@", url);
+    
     NSArray *purl = [[url stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] componentsSeparatedByString:@"|"];
     
-    if ([[purl objectAtIndex:1] isEqualToString:@"file"]) {
+    if ([purl count] > 2 && [[purl objectAtIndex:1] isEqualToString:@"file"]) {
         NSString *filename = [purl objectAtIndex:2];
         for (NSDictionary *d in urls) {
             if ([filename isEqualToString:[d objectForKey:@"filename"]]) {
@@ -91,7 +89,15 @@
         [tableview reloadData];
     }
     else
-        NSLog(@"Ignored unsupported ed2k URL type %@", [purl objectAtIndex:1]);
+        NSLog(@"Ignored unsupported URL string %@", url);
+}
+
+- (void)handleURLEvent:(NSAppleEventDescriptor*)event withReplyEvent:(NSAppleEventDescriptor*)replyEvent
+{
+    NSString* url = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
+    NSLog(@"URL da event: %@", url);
+
+    [self add_url:url];
 }
 
 -(void)cut
@@ -270,6 +276,15 @@
     [urls removeObjectsAtIndexes:rows];
     [tableview reloadData];
     [pb writeObjects:contents];
+}
+
+-(void)paste:(id)sender {
+    NSPasteboard* pb = [NSPasteboard generalPasteboard];
+    NSArray *cl = [NSArray arrayWithObjects:[NSURL class],[NSString class],nil];
+    NSArray *objects = [pb readObjectsForClasses:cl options:nil];
+    
+    for (NSString *s in objects)
+        [self add_url:s];
 }
 
 -(void)delete:(id)sender {
