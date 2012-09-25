@@ -7,6 +7,7 @@
 //
 
 #import "PrefsWindow.h"
+#import "nsextensions.h"
 
 @interface PrefsWindow ()
 
@@ -40,7 +41,7 @@
         [port setStringValue:[dict objectForKey:@"port"]];
         [command setStringValue:[dict objectForKey:@"command"]];
         [username setStringValue:[dict objectForKey:@"user"]];
-        [password setStringValue:[dict objectForKey:@"pwd"]];
+        [password setStringValue:[[dict objectForKey:@"pwd"] decrypt:@"ed2k-pwd"]];
     }
 }
 
@@ -55,7 +56,7 @@
                             [port stringValue],@"port",
                             [command stringValue],@"command",
                             [username stringValue],@"user",
-                            [password stringValue],@"pwd",
+                            [[password stringValue] encrypt:@"ed2k-pwd"],@"pwd",
                             nil];
     [config writeToFile:file atomically:NO];
 

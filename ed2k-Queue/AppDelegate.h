@@ -8,20 +8,18 @@
 
 #import <Cocoa/Cocoa.h>
 
-@class PrefsWindow;
-@class ProgressPanel;
+@class MainWindow;
 
-@interface AppDelegate : NSObject <NSApplicationDelegate, NSTableViewDataSource> {
-    PrefsWindow *prefsWin;
+@interface AppDelegate : NSObject <NSApplicationDelegate> {
+    MainWindow *mainWin;
 }
 
-@property (strong) ProgressPanel *progressSheet;
-
-@property (unsafe_unretained) IBOutlet NSTableView *tableview;
 @property (strong) NSString *host, *user, *pwd, *command, *port;
 @property (strong) NSMutableArray *urls;
-- (IBAction)submit_action:(id)sender;
-@property (weak) IBOutlet NSView *view;
 
+- (BOOL)valid_cfg;
+-(void)load_cfg;
+-(void)add_url:(NSString*)s;
+-(void)save_all;
 @end
 
