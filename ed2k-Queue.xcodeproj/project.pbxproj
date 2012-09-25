@@ -23,6 +23,8 @@
 		0BB229F01609CFDF00516CCB /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0BB229EE1609CFDF00516CCB /* MainMenu.xib */; };
 		0BB22A021609FB6100516CCB /* ed2k.png in Resources */ = {isa = PBXBuildFile; fileRef = 0BB22A011609FB6100516CCB /* ed2k.png */; };
 		0BB22A04160A076500516CCB /* ed2k.icns in Resources */ = {isa = PBXBuildFile; fileRef = 0BB22A03160A076500516CCB /* ed2k.icns */; };
+		0BD0BB6E1610C0DA00E21B88 /* ProgressPanel.m in Sources */ = {isa = PBXBuildFile; fileRef = 0BD0BB6C1610C0DA00E21B88 /* ProgressPanel.m */; };
+		0BD0BB6F1610C0DA00E21B88 /* ProgressPanel.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0BD0BB6D1610C0DA00E21B88 /* ProgressPanel.xib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -51,6 +53,9 @@
 		0BB229EF1609CFDF00516CCB /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		0BB22A011609FB6100516CCB /* ed2k.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = ed2k.png; path = ../ed2k.png; sourceTree = "<group>"; };
 		0BB22A03160A076500516CCB /* ed2k.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = ed2k.icns; path = ../ed2k.icns; sourceTree = "<group>"; };
+		0BD0BB6B1610C0DA00E21B88 /* ProgressPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProgressPanel.h; sourceTree = "<group>"; };
+		0BD0BB6C1610C0DA00E21B88 /* ProgressPanel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ProgressPanel.m; sourceTree = "<group>"; };
+		0BD0BB6D1610C0DA00E21B88 /* ProgressPanel.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ProgressPanel.xib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -123,6 +128,9 @@
 				0B4AA284160A23170008C3C1 /* PrefsWindow.h */,
 				0B4AA285160A23170008C3C1 /* PrefsWindow.m */,
 				0B4AA286160A23170008C3C1 /* PrefsWindow.xib */,
+				0BD0BB6B1610C0DA00E21B88 /* ProgressPanel.h */,
+				0BD0BB6C1610C0DA00E21B88 /* ProgressPanel.m */,
+				0BD0BB6D1610C0DA00E21B88 /* ProgressPanel.xib */,
 			);
 			path = "ed2k-Queue";
 			sourceTree = "<group>";
@@ -206,6 +214,7 @@
 				0BB22A04160A076500516CCB /* ed2k.icns in Resources */,
 				0B4AA27A160A1B180008C3C1 /* include in Resources */,
 				0B4AA288160A23170008C3C1 /* PrefsWindow.xib in Resources */,
+				0BD0BB6F1610C0DA00E21B88 /* ProgressPanel.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -220,6 +229,7 @@
 				0BB229E61609CFDE00516CCB /* main.m in Sources */,
 				0BB229ED1609CFDE00516CCB /* AppDelegate.mm in Sources */,
 				0B4AA287160A23170008C3C1 /* PrefsWindow.m in Sources */,
+				0BD0BB6E1610C0DA00E21B88 /* ProgressPanel.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

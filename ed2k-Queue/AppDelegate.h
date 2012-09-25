@@ -9,15 +9,19 @@
 #import <Cocoa/Cocoa.h>
 
 @class PrefsWindow;
+@class ProgressPanel;
 
 @interface AppDelegate : NSObject <NSApplicationDelegate, NSTableViewDataSource> {
     PrefsWindow *prefsWin;
 }
 
+@property (strong) ProgressPanel *progressSheet;
+
 @property (unsafe_unretained) IBOutlet NSTableView *tableview;
 @property (strong) NSString *host, *user, *pwd, *command, *port;
 @property (strong) NSMutableArray *urls;
 - (IBAction)submit_action:(id)sender;
+@property (weak) IBOutlet NSView *view;
 
 @end
 

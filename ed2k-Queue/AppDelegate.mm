@@ -9,25 +9,34 @@
 #import "AppDelegate.h"
 #import "ssh_conn.h"
 #import "PrefsWindow.h"
+#import "ProgressPanel.h"
 
 @implementation AppDelegate
 
-@synthesize urls, tableview, host, port, command, user, pwd;
+@synthesize urls, tableview, host, port, command, user, pwd, progressSheet, view;
 
-- (void)applicationDidFinishLaunching:(NSNotification *)aNotification
-{    
-    // handler registrazion
-    NSAppleEventManager *appleEventManager = [NSAppleEventManager sharedAppleEventManager];
-    [appleEventManager setEventHandler:self andSelector:@selector(handleURLEvent:withReplyEvent:) forEventClass:kInternetEventClass andEventID:kAEGetURL];
-    
-    prefsWin = nil;
-    
-    // carico configurazione e db
-    [self load_cfg];
-    [self load_db];
-    
-    [tableview reloadData];
+-(id)init
+{
+    NSLog(@"Delegate init");
+    self = [super init];
+
+    if (self) {
+        // handler registration
+        NSAppleEventManager *appleEventManager = [NSAppleEventManager sharedAppleEventManager];
+        [appleEventManager setEventHandler:self andSelector:@selector(handleURLEvent:withReplyEvent:) forEventClass:kInternetEventClass andEventID:kAEGetURL];
+        
+        prefsWin = nil;
+        progressSheet = nil;
+        
+        // loading db & config
+        [self load_cfg];
+        [self load_db];
+        
+        [tableview reloadData];
+    }
+    return self;
 }
+
 
 -(void)load_cfg
 {
@@ -67,7 +76,6 @@
 
 -(void)add_url:(NSString*)url
 {
-    
     NSArray *purl = [[url stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] componentsSeparatedByString:@"|"];
     
     if ([purl count] > 2 && [[purl objectAtIndex:1] isEqualToString:@"file"]) {
@@ -100,11 +108,6 @@
     [self add_url:url];
 }
 
--(void)cut
-{
-    NSLog(@"Cut clicked");
-}
-
 -(void)open_prefs
 {
     NSLog(@"Opening prefs window");
@@ -122,11 +125,69 @@
     [self load_cfg];
 }
 
+-(void)didEndSheet:(NSWindow *)sheet returnCode:(NSInteger)rc contextInfo:(void*)ci
+{
+    [sheet orderOut:self];
+}
+
+-(void)send_url_thread
+{
+    // creating SSH connection
+    SSHConn conn([host UTF8String], [port intValue]);
+    
+    conn.UserAuth([user UTF8String], [pwd UTF8String]);
+    
+    BOOL ko = NO;
+    double prog = 0.0;
+    double total = [urls count] + 2.0;
+    
+    if(conn.Connect()) {
+        prog++;
+        [self performSelectorOnMainThread:@selector(set_progress_bar:) withObject:[NSNumber numberWithDouble:(prog/total)] waitUntilDone:NO];
+        
+        std::string result;
+        NSLog(@"Connection with %@ established", host);
+        for (NSDictionary *d in urls) {
+            NSString *url = [d objectForKey:@"url"];
+            [progressSheet.label performSelectorOnMainThread:@selector(setStringValue:) withObject:[NSString stringWithFormat:@"Queuing %@", [d objectForKey:@"filename"]] waitUntilDone:NO];
+            NSString *cmd_string = [NSString stringWithFormat:@"%@ \"%@\"", command, url];
+            result.clear();
+            
+            if (!conn.Command([cmd_string UTF8String], result)) {
+                NSLog(@"Error executing <%@>: %s", cmd_string, conn.Error().c_str());
+                ko = YES;
+            }
+            else {
+                NSLog(@"Queuing file %@, cmdline: %@ answer: %s", [d objectForKey:@"filename"], cmd_string, result.c_str());
+            }
+            prog++;
+            
+            [self performSelectorOnMainThread:@selector(set_progress_bar:) withObject:[NSNumber numberWithDouble:(prog/total)] waitUntilDone:NO];
+        }
+        ::sleep(1);
+        NSLog(@"Closing connection.");
+        conn.Disconnect();
+        prog++;
+        [progressSheet.label performSelectorOnMainThread:@selector(setStringValue:) withObject:@"Operation completed." waitUntilDone:NO];
+        [self performSelectorOnMainThread:@selector(set_progress_bar:) withObject:[NSNumber numberWithDouble:(prog/total)] waitUntilDone:NO];    }
+    else {
+        NSLog(@"Unable to connect to %@/%@ error %s", host, port, conn.Error().c_str());
+        [progressSheet.label performSelectorOnMainThread:@selector(setStringValue:) withObject:[NSString stringWithFormat:@"Unable to connect to %@", host] waitUntilDone:NO];
+        ko = YES;
+    }
+    ::sleep(1);
+    [self performSelectorOnMainThread:@selector(send_url_results:) withObject:[NSNumber numberWithBool:ko] waitUntilDone:YES];
+}
+
+-(void)set_progress_bar:(NSNumber *)value
+{
+    [progressSheet.bar setDoubleValue:[progressSheet.bar maxValue] * [value doubleValue]];
+}
+
 -(void)send_urls
 {
-    NSAlert *alert = [[NSAlert alloc] init];
-
     if ([urls count] == 0) {
+         NSAlert *alert = [[NSAlert alloc] init];
         [alert setAlertStyle:NSWarningAlertStyle];
         [alert setMessageText:@"You have to select at least a link with your browser before submitting it to a remote mule!" ];
         [alert beginSheetModalForWindow:[tableview window] modalDelegate:self didEndSelector:nil contextInfo:nil];
@@ -147,37 +208,28 @@
             return;
     }
     
+    
     NSLog(@"Submit %lu urls with host %@ and port %@", [urls count], host, port);
+    if (!progressSheet)
+        progressSheet = [[ProgressPanel alloc] initWithWindowNibName:@"ProgressPanel"];
     
-    SSHConn conn([host UTF8String], [port intValue]);
+    [NSApp beginSheet:[progressSheet window] modalForWindow:[view window] modalDelegate:self didEndSelector:@selector(didEndSheet:returnCode:contextInfo:) contextInfo:nil];
     
-    conn.UserAuth([user UTF8String], [pwd UTF8String]);
+    
+    [progressSheet.label setStringValue:[NSString stringWithFormat:@"Connecting to %@/%@...", host, port]];
+    [progressSheet.bar setDoubleValue:0.0];
+    [progressSheet.bar startAnimation:self];
+    [NSThread detachNewThreadSelector:@selector(send_url_thread) toTarget:self withObject:nil];
+}
 
-    bool ko = false;
+-(void)send_url_results:(NSNumber *)ko
+{
+    [progressSheet.bar stopAnimation:self];
+    [NSApp endSheet:[progressSheet window]];
     
-    if(conn.Connect()) {
-        std::string result;
-        NSLog(@"Connection with %@ established", host);
-        for (NSDictionary *d in urls) {
-            NSString *url = [d objectForKey:@"url"];
-            NSString *cmd_string = [NSString stringWithFormat:@"%@ \"%@\"", command, url];
-            if (!conn.Command([cmd_string UTF8String], result)) {
-                NSLog(@"Error executing <%@>: %s", cmd_string, conn.Error().c_str());
-                ko = true;
-            }
-            else {
-                NSLog(@"Queuing file %@, cmdline: %@ answer: %s", [d objectForKey:@"filename"], cmd_string, result.c_str());
-            }
-        }
-        NSLog(@"Closing connection.");
-        conn.Disconnect();
-    }
-    else {
-        NSLog(@"Unable to connect to %@/%@ error %s", host, port, conn.Error().c_str());
-        ko = true;
-    }
-
-    if (!ko) {
+    NSAlert *alert = [[NSAlert alloc] init];
+    
+    if ([ko boolValue] == NO) {
         [alert setAlertStyle:NSInformationalAlertStyle];
         [alert setMessageText:[NSString stringWithFormat:@"%lu links submitted correctly to %@", [urls count], host]];
         [alert beginSheetModalForWindow:[tableview window] modalDelegate:self didEndSelector:nil contextInfo:nil];
@@ -292,5 +344,7 @@
 
     [urls removeObjectsAtIndexes:rows];
     [tableview reloadData];
+}
+- (IBAction)abort_send_urls:(id)sender {
 }
 @end
