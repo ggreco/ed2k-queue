@@ -51,6 +51,7 @@
     NSLog(@"Main window loaded");
     prefsWin = nil;
     progressSheet = nil;
+    childThread = nil;
     delegate = nil;
     // Implement this method to handle any initialization after your window controller's window has been loaded from its nib file.
     [tableview reloadData];
@@ -58,11 +59,29 @@
 
 -(void)didEndSheet:(NSWindow *)sheet returnCode:(NSInteger)rc contextInfo:(void*)ci
 {
+    if (childThread) {
+        NSLog(@"Detecting send_url abort");
+        NSMutableDictionary *threadDict = [childThread threadDictionary];
+        [threadDict setValue:[NSNumber numberWithBool:YES] forKey:@"abort"];
+    }
     [sheet orderOut:self];
+}
+
+-(BOOL)aborted:(NSMutableDictionary *)dict
+{
+    BOOL rc = [[dict valueForKey:@"abort" ] boolValue];
+    if (rc)
+        NSLog(@"Aborting thread operation");
+    
+    return rc;
 }
 
 -(void)send_url_thread
 {
+    
+    NSMutableDictionary *dict = [childThread threadDictionary];
+    [dict setValue:[NSNumber numberWithBool:NO] forKey:@"abort"];
+    
     // creating SSH connection
     SSHConn conn([delegate.host UTF8String], [delegate.port intValue]);
     
@@ -79,6 +98,11 @@
         std::string result;
         NSLog(@"Connection with %@ established", delegate.host);
         for (NSDictionary *d in delegate.urls) {
+            if ([self aborted:dict]) {
+                ko = YES;
+                return;
+            }
+            
             NSString *url = [d objectForKey:@"url"];
             [progressSheet.label performSelectorOnMainThread:@selector(setStringValue:) withObject:[NSString stringWithFormat:@"Queuing %@", [d objectForKey:@"filename"]] waitUntilDone:NO];
             NSString *cmd_string = [NSString stringWithFormat:@"%@ \"%@\"", delegate.command, url];
@@ -95,6 +119,11 @@
             
             [self performSelectorOnMainThread:@selector(set_progress_bar:) withObject:[NSNumber numberWithDouble:(prog/total)] waitUntilDone:NO];
         }
+        if ([self aborted:dict]) {
+            ko = YES;
+            return;
+        }
+        
         ::sleep(1);
         NSLog(@"Closing connection.");
         conn.Disconnect();
@@ -108,7 +137,11 @@
         ko = YES;
     }
     ::sleep(1);
-    [self performSelectorOnMainThread:@selector(send_url_results:) withObject:[NSNumber numberWithBool:ko] waitUntilDone:YES];
+    if ([self aborted:dict]) {
+        ko = YES;
+        return;
+    }
+    [self performSelectorOnMainThread:@selector(send_url_results:) withObject:[NSNumber numberWithBool:ko] waitUntilDone:NO];
 }
 
 -(void)set_progress_bar:(NSNumber *)value
@@ -146,13 +179,15 @@
     [progressSheet.label setStringValue:[NSString stringWithFormat:@"Connecting to %@/%@...", delegate.host, delegate.port]];
     [progressSheet.bar setDoubleValue:0.0];
     [progressSheet.bar startAnimation:self];
-    [NSThread detachNewThreadSelector:@selector(send_url_thread) toTarget:self withObject:nil];
+    childThread = [[NSThread alloc] initWithTarget:self selector:@selector(send_url_thread) object:nil];
+    [childThread start];
 }
 
 -(void)send_url_results:(NSNumber *)ko
 {
     [progressSheet.bar stopAnimation:self];
     [NSApp endSheet:[progressSheet window]];
+    childThread = nil;
     
     NSAlert *alert = [[NSAlert alloc] init];
     

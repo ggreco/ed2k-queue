@@ -15,6 +15,7 @@
 @interface MainWindow : NSWindowController <NSTableViewDataSource> {
     PrefsWindow *prefsWin;
     ProgressPanel *progressSheet;
+    NSThread *childThread;
 }
 
 @property AppDelegate *delegate;
