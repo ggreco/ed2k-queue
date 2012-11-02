@@ -17,6 +17,7 @@
 		0B4AA288160A23170008C3C1 /* PrefsWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0B4AA286160A23170008C3C1 /* PrefsWindow.xib */; };
 		0B756A541611F7D20003D607 /* MainWindow.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0B756A531611F7D20003D607 /* MainWindow.mm */; };
 		0B756A5A161200E90003D607 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0B756A58161200E90003D607 /* MainWindow.xib */; };
+		0B984B0016440F1100B6F9C4 /* nsextensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B984AFF16440F1100B6F9C4 /* nsextensions.m */; };
 		0BB229DA1609CFDE00516CCB /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0BB229D91609CFDE00516CCB /* Cocoa.framework */; };
 		0BB229E41609CFDE00516CCB /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0BB229E21609CFDE00516CCB /* InfoPlist.strings */; };
 		0BB229E61609CFDE00516CCB /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 0BB229E51609CFDE00516CCB /* main.m */; };
@@ -27,7 +28,6 @@
 		0BB22A04160A076500516CCB /* ed2k.icns in Resources */ = {isa = PBXBuildFile; fileRef = 0BB22A03160A076500516CCB /* ed2k.icns */; };
 		0BD0BB6E1610C0DA00E21B88 /* ProgressPanel.m in Sources */ = {isa = PBXBuildFile; fileRef = 0BD0BB6C1610C0DA00E21B88 /* ProgressPanel.m */; };
 		0BD0BB6F1610C0DA00E21B88 /* ProgressPanel.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0BD0BB6D1610C0DA00E21B88 /* ProgressPanel.xib */; };
-		0BD8A2961611C5B80039DDD2 /* nsextensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 0BD8A2951611C5B80039DDD2 /* nsextensions.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -44,6 +44,8 @@
 		0B756A521611F7D20003D607 /* MainWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MainWindow.h; sourceTree = "<group>"; };
 		0B756A531611F7D20003D607 /* MainWindow.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MainWindow.mm; sourceTree = "<group>"; };
 		0B756A58161200E90003D607 /* MainWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MainWindow.xib; sourceTree = "<group>"; };
+		0B984AFF16440F1100B6F9C4 /* nsextensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = nsextensions.m; sourceTree = "<group>"; };
+		0B984B0116440F1A00B6F9C4 /* nsextensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = nsextensions.h; sourceTree = "<group>"; };
 		0BB229D51609CFDE00516CCB /* ed2k-Queue.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ed2k-Queue.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0BB229D91609CFDE00516CCB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		0BB229DC1609CFDE00516CCB /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -62,8 +64,6 @@
 		0BD0BB6B1610C0DA00E21B88 /* ProgressPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProgressPanel.h; sourceTree = "<group>"; };
 		0BD0BB6C1610C0DA00E21B88 /* ProgressPanel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ProgressPanel.m; sourceTree = "<group>"; };
 		0BD0BB6D1610C0DA00E21B88 /* ProgressPanel.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ProgressPanel.xib; sourceTree = "<group>"; };
-		0BD8A2941611C5B80039DDD2 /* nsextensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = nsextensions.h; path = ../../gglocker/gglocker/nsextensions.h; sourceTree = "<group>"; };
-		0BD8A2951611C5B80039DDD2 /* nsextensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = nsextensions.m; path = ../../gglocker/gglocker/nsextensions.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -125,8 +125,8 @@
 		0BB229DF1609CFDE00516CCB /* ed2k-Queue */ = {
 			isa = PBXGroup;
 			children = (
-				0BD8A2941611C5B80039DDD2 /* nsextensions.h */,
-				0BD8A2951611C5B80039DDD2 /* nsextensions.m */,
+				0B984B0116440F1A00B6F9C4 /* nsextensions.h */,
+				0B984AFF16440F1100B6F9C4 /* nsextensions.m */,
 				0BB22A05160A079600516CCB /* images */,
 				0B4AA279160A1B180008C3C1 /* include */,
 				0B4AA276160A1AB40008C3C1 /* ssh_conn.cpp */,
@@ -244,8 +244,8 @@
 				0BB229ED1609CFDE00516CCB /* AppDelegate.m in Sources */,
 				0B4AA287160A23170008C3C1 /* PrefsWindow.m in Sources */,
 				0BD0BB6E1610C0DA00E21B88 /* ProgressPanel.m in Sources */,
-				0BD8A2961611C5B80039DDD2 /* nsextensions.m in Sources */,
 				0B756A541611F7D20003D607 /* MainWindow.mm in Sources */,
+				0B984B0016440F1100B6F9C4 /* nsextensions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
