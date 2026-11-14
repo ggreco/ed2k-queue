@@ -34,6 +34,8 @@
 
 - (IBAction)urlStop:(id)sender {
     NSLog(@"Stopping in progress operation");
-    [NSApp endSheet:[self window]];
+    NSWindow *w = [self window];
+    if ([w sheetParent])
+        [[w sheetParent] endSheet:w returnCode:NSModalResponseCancel];
 }
 @end

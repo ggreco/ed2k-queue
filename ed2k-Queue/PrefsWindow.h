@@ -15,4 +15,8 @@
 @property (weak) IBOutlet NSTextField *username;
 @property (weak) IBOutlet NSSecureTextField *password;
 @property (weak) IBOutlet NSTextField *command;
+@property (weak) IBOutlet NSTextField *magnetCommand;
+
+// Reload the fields from the config file.
+- (void)reload;
 @end

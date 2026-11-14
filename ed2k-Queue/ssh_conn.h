@@ -3,7 +3,7 @@
 #define SSH_CLASS_H
 
 #include <string>
-#include "include/libssh2.h"
+#include "libssh2.h"
 
 class SSHConn
 {
@@ -16,6 +16,7 @@ class SSHConn
     std::string privkey_;
     LIBSSH2_SESSION *session_;
     int sock_, port_;
+    int exit_status_;
 
     std::string error_;
     static void kbd_cbk(const char *, int, const char *, int,
@@ -24,7 +25,7 @@ class SSHConn
 public:
     SSHConn(const std::string &ip, int port = 22) :
         host_(ip), pwdauth_(false), keyauth_(false),
-        session_(NULL), sock_(-1), port_(port)
+        session_(NULL), sock_(-1), port_(port), exit_status_(-1)
     {}
     ~SSHConn() { Disconnect(); }
 
@@ -51,5 +52,7 @@ public:
     bool Command(const std::string &command_line, std::string &result);
 
     const std::string &Error() const { return error_; }
+    // Exit status of the last remote command executed with Command().
+    int ExitStatus() const { return exit_status_; }
 };
 #endif

@@ -15,7 +15,6 @@
 @end
 
 @interface NSString (MD5Support)
-- (NSString *) md5;
 - (NSString *)encrypt:(NSString *) pwd;
 - (NSString *)decrypt:(NSString *) pwd;
 - (NSData *)base64Data;

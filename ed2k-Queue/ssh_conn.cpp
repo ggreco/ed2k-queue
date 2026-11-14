@@ -11,13 +11,32 @@
 #include <errno.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <string.h>
+#include <netdb.h>
+#include <sys/stat.h>
+#include <algorithm>
+#include <mutex>
+#include <string>
 
 bool SSHConn::
 Command(const std::string &line, std::string &result)
 {
+    error_.clear();
+    exit_status_ = -1;
+
+    if (!session_) {
+        error_ = "Invalid session";
+        return false;
+    }
+
     if (LIBSSH2_CHANNEL *channel = libssh2_channel_open_session(session_)) {
-        int rc = libssh2_channel_exec(channel, line.c_str());
-        
+        if (libssh2_channel_exec(channel, line.c_str()) != 0) {
+            error_ = "Unable to execute remote command.";
+            libssh2_channel_free(channel);
+            return false;
+        }
+
+        ssize_t rc;
         do
         {
             char buffer[0x4000];
@@ -32,7 +51,26 @@ Command(const std::string &line, std::string &result)
         }
         while( rc > 0 );
 
+        // Drain stderr too, so that it can be reported on failure.
+        std::string err;
+        do {
+            char buffer[0x1000];
+            rc = libssh2_channel_read_stderr(channel, buffer, sizeof(buffer));
+            if (rc > 0)
+                err.append(buffer, rc);
+        } while (rc > 0);
+
+        libssh2_channel_close(channel);
+        libssh2_channel_wait_closed(channel);
+        exit_status_ = libssh2_channel_get_exit_status(channel);
         libssh2_channel_free(channel);
+
+        if (exit_status_ != 0) {
+            error_ = "Remote command exited with status " + std::to_string(exit_status_);
+            if (!err.empty())
+                error_ += ": " + err;
+            return false;
+        }
         return true;
     }
     else 
@@ -41,7 +79,7 @@ Command(const std::string &line, std::string &result)
     return false;
 }
 
-#include "include/libssh2_sftp.h"
+#include "libssh2_sftp.h"
 
 bool SSHConn::
 SendBuffer(const std::string &srcbuffer, const std::string &destfile)
@@ -54,7 +92,7 @@ SendBuffer(const std::string &srcbuffer, const std::string &destfile)
         unsigned long total = srcbuffer.length();
 
         do {
-            int nread = std::min<int>(total, 2048);
+            size_t nread = std::min<size_t>(total, 2048);
 
             total -= nread;
 
@@ -65,7 +103,7 @@ SendBuffer(const std::string &srcbuffer, const std::string &destfile)
 
             while (nread > 0) {
             /* write data in a loop until we block */
-                int rc = libssh2_channel_write(channel, tptr, nread);
+                ssize_t rc = libssh2_channel_write(channel, tptr, nread);
                 if (rc > 0) {
                     tptr += rc;
                     nread -= rc;
@@ -124,20 +162,21 @@ RecvBuffer(const std::string &srcfile, std::string &destbuffer)
         error_ = "Invalid session";
         return false;
     }
-    struct stat fileinfo;
+    libssh2_struct_stat fileinfo;
+    memset(&fileinfo, 0, sizeof(fileinfo));
 
-    if (LIBSSH2_CHANNEL *channel = libssh2_scp_recv(session_, srcfile.c_str(), &fileinfo)) {
-        int got = 0;
+    if (LIBSSH2_CHANNEL *channel = libssh2_scp_recv2(session_, srcfile.c_str(), &fileinfo)) {
+        libssh2_struct_stat_size got = 0;
         destbuffer.clear();
 
         while(got < fileinfo.st_size) {
             char mem[1024];
-            int amount=sizeof(mem);
+            size_t amount=sizeof(mem);
 
-            if((fileinfo.st_size -got) < amount) 
-                amount = fileinfo.st_size -got;
+            if((fileinfo.st_size -got) < (libssh2_struct_stat_size)amount)
+                amount = (size_t)(fileinfo.st_size -got);
 
-            int rc = libssh2_channel_read(channel, mem, amount);
+            ssize_t rc = libssh2_channel_read(channel, mem, amount);
 
             if (rc > 0) {
                 destbuffer.append(mem, rc);
@@ -145,6 +184,7 @@ RecvBuffer(const std::string &srcfile, std::string &destbuffer)
             }
             else {
                 error_ = "Error reading channel.";
+                libssh2_channel_free(channel);
                 return false;
             }
         }
@@ -163,7 +203,7 @@ SendFile(const std::string &local, const std::string &remote)
         std::string buff;
         char buffer[0x10000];
         while (!feof(f)) {
-            int len = fread(buffer, 1, sizeof(buffer), f);
+            size_t len = fread(buffer, 1, sizeof(buffer), f);
             if (len > 0) {
                 buff.append(buffer, len);
             }
@@ -193,9 +233,9 @@ RecvFile(const std::string &remote, const std::string &local)
             error_ = "Nothing to write!";
         }
         else if (FILE *f = fopen(local.c_str(), "wb")) {
-            int len = fwrite(buffer.c_str(), 1, buffer.length(), f);
+            size_t len = fwrite(buffer.c_str(), 1, buffer.length(), f);
             fclose(f);
-            if (len == (int)buffer.length())
+            if (len == buffer.length())
                 return true;
             else
                 error_ = "Unable to write all the needed bytes!";
@@ -215,9 +255,10 @@ kbd_cbk(const char *, int, const char *, int,
                     LIBSSH2_USERAUTH_KBDINT_RESPONSE *responses, void **abstract)
 {
     SSHConn *conn = (SSHConn *)*abstract;
-    if (num_prompts == 1) {
-        responses[0].text = strdup(conn->pwd_.c_str());
-        responses[0].length = conn->pwd_.length();
+    // Answer every prompt with the password (typically a single "Password:").
+    for (int i = 0; i < num_prompts; ++i) {
+        responses[i].text = strdup(conn->pwd_.c_str());
+        responses[i].length = (unsigned int)conn->pwd_.length();
     }
 }
 
@@ -233,51 +274,71 @@ Connect()
         return false;
     }
 
-    in_addr_t hostaddr = INADDR_NONE;
-    
-    // check ip numerico
-    if (host_[0] >= '0' && host_[0] <= '1')
-        hostaddr = inet_addr(host_.c_str());
-    else {
-        if (struct hostent *he = gethostbyname(host_.c_str())) {
-            hostaddr = ((struct in_addr*)(he->h_addr_list[0]))->s_addr;
-            // printf("Connecting to %s...\n", inet_ntoa(*((struct in_addr*)(he->h_addr_list[0]))));
-        }
+    // libssh2_init() must be called once before any other libssh2 call.
+    static std::once_flag init_flag;
+    std::call_once(init_flag, [] { libssh2_init(0); });
+
+    // Resolve host (IPv4 / IPv6 / hostname) and try every returned address.
+    struct addrinfo hints;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = IPPROTO_TCP;
+
+    struct addrinfo *res = NULL;
+    std::string service = std::to_string(port_);
+    if (int gai = getaddrinfo(host_.c_str(), service.c_str(), &hints, &res)) {
+        error_ = std::string("Error resolving host address: ") + gai_strerror(gai);
+        return false;
     }
-    
-    if (hostaddr == INADDR_NONE) {
-        error_ = "Error in host address.";
+
+    for (struct addrinfo *ai = res; ai; ai = ai->ai_next) {
+        int s = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
+        if (s < 0)
+            continue;
+        // Avoid SIGPIPE killing the app if the remote end drops the connection.
+        int one = 1;
+        setsockopt(s, SOL_SOCKET, SO_NOSIGPIPE, &one, sizeof(one));
+        if (connect(s, ai->ai_addr, ai->ai_addrlen) == 0) {
+            sock_ = s;
+            break;
+        }
+        ::close(s);
+    }
+    freeaddrinfo(res);
+
+    if (sock_ < 0) {
+        error_ = std::string("Failed to connect: ") + strerror(errno);
         return false;
     }
 
     if(!(session_ = libssh2_session_init_ex(NULL, NULL, NULL, this))) {
+        Disconnect();
         error_ = "Unable to create session!";
         return false;
     }
 
-    sock_ = socket(AF_INET, SOCK_STREAM, 0);
-    struct sockaddr_in sin;
+    libssh2_session_set_blocking(session_, 1);
 
-    sin.sin_family = AF_INET;
-    sin.sin_port = htons(port_);
-    sin.sin_addr.s_addr = hostaddr;
-    if (connect(sock_, (struct sockaddr*)(&sin),
-            sizeof(struct sockaddr_in)) != 0) {
-        Disconnect();
-        error_ = "failed to connect!";
-        return false;
-    }    
-
-    if (libssh2_session_startup(session_, sock_)) {
+    if (libssh2_session_handshake(session_, sock_)) {
         Disconnect();
         error_ = "Failure establishing SSH session.";
         return false;
     }
 
-    char *userauthlist = libssh2_userauth_list(session_, user_.c_str(), user_.length());
-    
+    char *userauthlist = libssh2_userauth_list(session_, user_.c_str(),
+                                               (unsigned int)user_.length());
+
+    if (!userauthlist) {
+        if (libssh2_userauth_authenticated(session_))
+            return true; // "none" authentication accepted
+        error_ = "Unable to retrieve the authentication methods list.";
+        Disconnect();
+        return false;
+    }
+
     bool support_pwd_auth = false;
-    
+
     if (strstr(userauthlist, "password"))
         support_pwd_auth = true;
     
